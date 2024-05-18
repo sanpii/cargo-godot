@@ -1,0 +1,33 @@
+image: "rust:latest"
+
+stages:
+    - lint
+    - test
+
+variables:
+    CARGO_HOME: $CI_PROJECT_DIR/cargo
+
+lint:fmt:
+    stage: lint
+    before_script:
+        - rustup component add rustfmt
+    script: cargo fmt -- --check
+
+lint:clippy:
+    stage: lint
+    before_script:
+        - rustup component add clippy
+    script: cargo clippy -- --deny warnings
+
+test:
+    parallel:
+        matrix:
+            - MODE: ['debug', 'release']
+    stage: test
+    script: |
+        if [[ $MODE == "release" ]]
+        then
+            cargo test --workspace --features "$feature" --release
+        else
+            cargo test --workspace --features "$feature"
+        fi
