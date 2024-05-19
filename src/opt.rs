@@ -7,10 +7,16 @@ pub enum Opt {
 
 #[derive(Debug, clap::Subcommand)]
 pub enum Command {
-    //Debug,
+    Debug(DebugOpt),
     Editor(EditorOpt),
     Export(ExportOpt),
     Run(RunOpt),
+}
+
+#[derive(Debug, clap::Parser)]
+pub struct DebugOpt {
+    #[arg(long, default_value = "./Cargo.toml")]
+    pub manifest_path: std::path::PathBuf,
 }
 
 #[derive(Debug, clap::Parser)]

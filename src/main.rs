@@ -25,10 +25,23 @@ fn main() -> Result {
     let Opt::Godot(command) = Opt::parse();
 
     match command {
+        opt::Command::Debug(args) => debug(args),
         opt::Command::Editor(args) => editor(args),
         opt::Command::Export(args) => export(args),
         opt::Command::Run(args) => run(args),
     }
+}
+
+fn debug(opt: opt::DebugOpt) -> Result {
+    let config = Config::try_from(&opt.manifest_path)?;
+
+    build(&opt.manifest_path, BuildMode::Debug)?;
+
+    let mut args = vec!["/usr/bin/godot".to_string(), "--".to_string()];
+    args.append(&mut config.into_args());
+    exec("/usr/bin/lldb", &args)?;
+
+    Ok(())
 }
 
 fn editor(opt: opt::EditorOpt) -> Result {

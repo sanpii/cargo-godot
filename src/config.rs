@@ -26,7 +26,6 @@ impl Config {
     }
 
     pub fn into_args(self) -> Vec<String> {
-        // --editor-pid 11043 --position 520,355
         let mut args = vec![
             "--path".to_string(),
             self.project.to_str().unwrap().to_string(),
