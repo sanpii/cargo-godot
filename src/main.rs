@@ -3,8 +3,8 @@
 mod config;
 mod opt;
 
-use config::Config;
 use clap::Parser;
+use config::Config;
 use opt::Opt;
 
 type Result<T = ()> = std::result::Result<T, Error>;
@@ -49,11 +49,7 @@ fn editor(opt: opt::EditorOpt) -> Result {
 
     exec(
         "/usr/bin/godot",
-        [
-            "--editor",
-            "--path",
-            config.project.to_str().unwrap(),
-        ],
+        ["--editor", "--path", config.project.to_str().unwrap()],
     )
 }
 
@@ -67,7 +63,9 @@ fn export(opt: opt::ExportOpt) -> Result {
 
     let config = Config::try_from(&opt.manifest_path)?;
 
-    let mut path = opt.path.unwrap_or_else(|| std::path::PathBuf::from(&config.name));
+    let mut path = opt
+        .path
+        .unwrap_or_else(|| std::path::PathBuf::from(&config.name));
     if !path.is_absolute() {
         path = std::env::current_dir()?.join(path);
     }
