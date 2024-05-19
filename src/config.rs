@@ -10,7 +10,7 @@ pub struct Config {
 impl Config {
     pub fn try_from(manifest_path: &std::path::Path) -> crate::Result<Self> {
         let metadata = cargo_metadata::MetadataCommand::new()
-            .manifest_path(&manifest_path)
+            .manifest_path(manifest_path)
             .exec()?;
 
         let root = root(&metadata).unwrap();
@@ -19,7 +19,7 @@ impl Config {
         let mut configuration: Self = serde_json::from_value(package.metadata["godot"].clone())?;
         configuration.project = manifest_path.parent().unwrap().join(&configuration.project);
         if configuration.name.is_empty() {
-            configuration.name = package.name.clone();
+            configuration.name.clone_from(&package.name);
         }
 
         Ok(configuration)

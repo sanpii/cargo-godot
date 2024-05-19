@@ -89,7 +89,7 @@ fn run(opt: opt::RunOpt) -> Result {
     build(&opt.manifest_path, BuildMode::Debug)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
-    exec("/usr/bin/godot", &config.into_args())?;
+    exec("/usr/bin/godot", config.into_args())?;
 
     Ok(())
 }
