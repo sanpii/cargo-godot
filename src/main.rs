@@ -96,7 +96,12 @@ fn run(opt: opt::RunOpt) -> Result {
     build(&opt.manifest_path, BuildMode::Debug)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
-    exec("godot", config.into_args())?;
+    let mut args = config.into_args();
+    if let Some(scene) = opt.scene {
+        args.push(scene);
+    }
+
+    exec("godot", args)?;
 
     Ok(())
 }

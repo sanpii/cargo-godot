@@ -50,4 +50,6 @@ pub struct RunOpt {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
+    /// Launch this specified scene instead of the default one
+    pub scene: Option<String>,
 }

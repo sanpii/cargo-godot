@@ -3,7 +3,6 @@ pub struct Config {
     #[serde(default)]
     pub name: String,
     pub project: std::path::PathBuf,
-    pub scene: Option<String>,
     pub remote_debug: Option<String>,
 }
 
@@ -34,10 +33,6 @@ impl Config {
         if let Some(remote_debug) = self.remote_debug {
             args.push("--remote-debug".to_string());
             args.push(remote_debug);
-        }
-
-        if let Some(scene) = self.scene {
-            args.push(scene);
         }
 
         args
