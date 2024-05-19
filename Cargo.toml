@@ -3,6 +3,8 @@ name = "cargo-godot"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+description = "cargo helper for godot developpers"
+repository = "https://github.com/sanpii/cargo-godot"
 
 [dependencies]
 cargo_metadata = "0.18"
