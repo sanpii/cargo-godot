@@ -1,7 +1,9 @@
 #![warn(warnings)]
 
+mod config;
 mod opt;
 
+use config::Config;
 use clap::Parser;
 use opt::Opt;
 
@@ -29,62 +31,15 @@ fn main() -> Result {
     }
 }
 
-#[derive(Debug, serde::Deserialize)]
-struct Configuration {
-    #[serde(default)]
-    name: String,
-    project: std::path::PathBuf,
-    scene: Option<String>,
-    remote_debug: Option<String>,
-}
-
-impl Configuration {
-    fn try_from(manifest_path: &std::path::Path) -> Result<Self> {
-        let metadata = cargo_metadata::MetadataCommand::new()
-            .manifest_path(&manifest_path)
-            .exec()?;
-
-        let root = root(&metadata).unwrap();
-        let package = metadata.packages.iter().find(|x| &x.id == root).unwrap();
-
-        let mut configuration: Self = serde_json::from_value(package.metadata["godot"].clone())?;
-        configuration.project = manifest_path.parent().unwrap().join(&configuration.project);
-        if configuration.name.is_empty() {
-            configuration.name = package.name.clone();
-        }
-
-        Ok(configuration)
-    }
-
-    fn into_args(self) -> Vec<String> {
-        // --editor-pid 11043 --position 520,355
-        let mut args = vec![
-            "--path".to_string(),
-            self.project.to_str().unwrap().to_string(),
-        ];
-
-        if let Some(remote_debug) = self.remote_debug {
-            args.push("--remote-debug".to_string());
-            args.push(remote_debug);
-        }
-
-        if let Some(scene) = self.scene {
-            args.push(scene);
-        }
-
-        args
-    }
-}
-
 fn editor(opt: opt::EditorOpt) -> Result {
-    let configuration = Configuration::try_from(&opt.manifest_path)?;
+    let config = Config::try_from(&opt.manifest_path)?;
 
     exec(
         "/usr/bin/godot",
         [
             "--editor",
             "--path",
-            configuration.project.to_str().unwrap(),
+            config.project.to_str().unwrap(),
         ],
     )
 }
@@ -97,14 +52,14 @@ fn export(opt: opt::ExportOpt) -> Result {
     };
     build(&opt.manifest_path, build_mode)?;
 
-    let configuration = Configuration::try_from(&opt.manifest_path)?;
+    let config = Config::try_from(&opt.manifest_path)?;
 
-    let mut path = opt.path.unwrap_or_else(|| std::path::PathBuf::from(&configuration.name));
+    let mut path = opt.path.unwrap_or_else(|| std::path::PathBuf::from(&config.name));
     if !path.is_absolute() {
         path = std::env::current_dir()?.join(path);
     }
 
-    let mut args = configuration.into_args();
+    let mut args = config.into_args();
     if opt.release {
         args.push("--export-release".to_string());
     } else {
@@ -122,14 +77,10 @@ fn export(opt: opt::ExportOpt) -> Result {
 fn run(opt: opt::RunOpt) -> Result {
     build(&opt.manifest_path, BuildMode::Debug)?;
 
-    let configuration = Configuration::try_from(&opt.manifest_path)?;
-    exec("/usr/bin/godot", &configuration.into_args())?;
+    let config = Config::try_from(&opt.manifest_path)?;
+    exec("/usr/bin/godot", &config.into_args())?;
 
     Ok(())
-}
-
-fn root(metadata: &cargo_metadata::Metadata) -> Option<&cargo_metadata::PackageId> {
-    metadata.resolve.as_ref()?.root.as_ref()
 }
 
 enum BuildMode {
