@@ -68,9 +68,13 @@ fn export(opt: opt::ExportOpt) -> Result {
 
     let mut path = opt
         .path
-        .unwrap_or_else(|| std::path::PathBuf::from(&config.name));
+        .unwrap_or_else(|| std::path::PathBuf::from(format!("build/{}", config.name)));
     if !path.is_absolute() {
         path = std::env::current_dir()?.join(path);
+    }
+
+    if !path.parent().unwrap().exists() {
+        std::fs::create_dir_all(path.parent().unwrap())?;
     }
 
     let mut args = config.into_args();
