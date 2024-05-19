@@ -19,6 +19,8 @@ enum Error {
     Manifest(#[from] cargo_metadata::Error),
     #[error("Unable to read cargo metadata: {0}")]
     Metadata(#[from] serde_json::Error),
+    #[error("Unable to find executable: {0}")]
+    Which(String),
 }
 
 fn main() -> Result {
@@ -37,9 +39,10 @@ fn debug(opt: opt::DebugOpt) -> Result {
 
     build(&opt.manifest_path, BuildMode::Debug)?;
 
-    let mut args = vec!["/usr/bin/godot".to_string(), "--".to_string()];
+    let godot = which("godot")?;
+    let mut args = vec![godot.to_str().unwrap().to_string(), "--".to_string()];
     args.append(&mut config.into_args());
-    exec("/usr/bin/lldb", &args)?;
+    exec("lldb", &args)?;
 
     Ok(())
 }
@@ -48,7 +51,7 @@ fn editor(opt: opt::EditorOpt) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
 
     exec(
-        "/usr/bin/godot",
+        "godot",
         ["--editor", "--path", config.project.to_str().unwrap()],
     )
 }
@@ -80,7 +83,7 @@ fn export(opt: opt::ExportOpt) -> Result {
     args.push(opt.preset);
     args.push(path.to_str().unwrap().to_string());
 
-    exec("/usr/bin/godot", &args)?;
+    exec("godot", &args)?;
 
     Ok(())
 }
@@ -89,7 +92,7 @@ fn run(opt: opt::RunOpt) -> Result {
     build(&opt.manifest_path, BuildMode::Debug)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
-    exec("/usr/bin/godot", config.into_args())?;
+    exec("godot", config.into_args())?;
 
     Ok(())
 }
@@ -106,7 +109,7 @@ fn build(manifest_path: &std::path::Path, build_mode: BuildMode) -> Result {
         args.push("--release");
     }
 
-    exec("/usr/bin/cargo", &args)
+    exec("cargo", &args)
 }
 
 fn exec<I, S>(program: &str, args: I) -> Result
@@ -114,11 +117,16 @@ where
     I: IntoIterator<Item = S>,
     S: AsRef<std::ffi::OsStr>,
 {
-    let mut child = std::process::Command::new(program).args(args).spawn()?;
+    let executable = which(program)?;
+    let mut child = std::process::Command::new(executable).args(args).spawn()?;
 
     if child.wait()?.success() {
         Ok(())
     } else {
         Err(Error::Exec(program.to_string()))
     }
+}
+
+fn which(program: &str) -> Result<std::path::PathBuf> {
+    which::which(program).map_err(|_| Error::Which(program.to_string()))
 }
