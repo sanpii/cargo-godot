@@ -14,6 +14,7 @@ pub enum Command {
     /// Export game
     Export(ExportOpt),
     /// Run game
+    #[command(alias = "r")]
     Run(RunOpt),
 }
 
