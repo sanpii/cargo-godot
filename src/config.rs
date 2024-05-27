@@ -16,7 +16,12 @@ impl Config {
         let package = metadata.packages.iter().find(|x| &x.id == root).unwrap();
 
         let mut configuration: Self = serde_json::from_value(package.metadata["godot"].clone())?;
-        configuration.project = manifest_path.parent().unwrap().join(&configuration.project);
+        configuration.project = manifest_path
+            .parent()
+            .unwrap()
+            .join(&configuration.project)
+            .canonicalize()
+            .unwrap();
         if configuration.name.is_empty() {
             configuration.name.clone_from(&package.name);
         }

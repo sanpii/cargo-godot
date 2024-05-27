@@ -7,6 +7,9 @@ pub enum Opt {
 
 #[derive(Debug, clap::Subcommand)]
 pub enum Command {
+    /// Build extension
+    #[command(alias = "b")]
+    Build(BuildOpt),
     /// Launch game via LLDB
     Debug(DebugOpt),
     /// Launch project in Godot
@@ -16,6 +19,13 @@ pub enum Command {
     /// Run game
     #[command(alias = "r")]
     Run(RunOpt),
+}
+
+#[derive(Debug, clap::Parser)]
+pub struct BuildOpt {
+    /// Path to Cargo.toml
+    #[arg(long, default_value = "./Cargo.toml")]
+    pub manifest_path: std::path::PathBuf,
 }
 
 #[derive(Debug, clap::Parser)]

@@ -27,6 +27,7 @@ fn main() -> Result {
     let Opt::Godot(command) = Opt::parse();
 
     match command {
+        opt::Command::Build(args) => build(args),
         opt::Command::Debug(args) => debug(args),
         opt::Command::Editor(args) => editor(args),
         opt::Command::Export(args) => export(args),
@@ -34,10 +35,49 @@ fn main() -> Result {
     }
 }
 
+fn build(opt: opt::BuildOpt) -> Result {
+    cargo_build(&opt.manifest_path, BuildMode::Debug)?;
+
+    let config = Config::try_from(&opt.manifest_path)?;
+    let pkgname = config.name.clone();
+
+    let target = pathdiff::diff_paths(
+        opt.manifest_path.parent().unwrap().canonicalize().unwrap(),
+        config.project,
+    )
+    .unwrap()
+    .join("target");
+
+    let contents = format!(
+        r#"
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 =     "res://{target}/debug/lib{pkgname}.so"
+linux.release.x86_64 =   "res://{target}/release/lib{pkgname}.so"
+windows.debug.x86_64 =   "res://{target}/debug/{pkgname}.dll"
+windows.release.x86_64 = "res://{target}/release/{pkgname}.dll"
+macos.debug =            "res://{target}/debug/lib{pkgname}.dylib"
+macos.release =          "res://{target}/release/lib{pkgname}.dylib"
+macos.debug.arm64 =      "res://{target}/debug/lib{pkgname}.dylib"
+macos.release.arm64 =    "res://{target}/release/lib{pkgname}.dylib"
+"#,
+        target = target.display()
+    );
+
+    let mut gdextension = opt.manifest_path.parent().unwrap().join(pkgname);
+    gdextension.set_extension("gdextension");
+    std::fs::write(&gdextension, contents)?;
+    Ok(())
+}
+
 fn debug(opt: opt::DebugOpt) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
 
-    build(&opt.manifest_path, BuildMode::Debug)?;
+    cargo_build(&opt.manifest_path, BuildMode::Debug)?;
 
     let godot = which("godot")?;
     let mut args = vec![godot.to_str().unwrap().to_string(), "--".to_string()];
@@ -62,7 +102,7 @@ fn export(opt: opt::ExportOpt) -> Result {
     } else {
         BuildMode::Debug
     };
-    build(&opt.manifest_path, build_mode)?;
+    cargo_build(&opt.manifest_path, build_mode)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
 
@@ -93,7 +133,10 @@ fn export(opt: opt::ExportOpt) -> Result {
 }
 
 fn run(opt: opt::RunOpt) -> Result {
-    build(&opt.manifest_path, BuildMode::Debug)?;
+    let build_opt = opt::BuildOpt {
+        manifest_path: opt.manifest_path.clone(),
+    };
+    build(build_opt)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
     let mut args = config.into_args();
@@ -111,7 +154,7 @@ enum BuildMode {
     Release,
 }
 
-fn build(manifest_path: &std::path::Path, build_mode: BuildMode) -> Result {
+fn cargo_build(manifest_path: &std::path::Path, build_mode: BuildMode) -> Result {
     let mut args = vec!["build", "--manifest-path", manifest_path.to_str().unwrap()];
 
     if matches!(build_mode, BuildMode::Release) {

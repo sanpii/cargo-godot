@@ -27,3 +27,11 @@ Then, you can directly run/export/debug your project directly via cargo:
 ```
 cargo godot run
 ```
+
+`cargo-godot` generates the `.gdextension` file at the top of rust project. You
+can create a link in your godot project:
+
+```
+cd ../godot
+ln -s ../rust/project.gdextension
+```
