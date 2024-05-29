@@ -10,6 +10,8 @@ pub enum Command {
     /// Build extension
     #[command(alias = "b")]
     Build(BuildOpt),
+    /// Create a new class
+    Create(CreateOpt),
     /// Launch game via LLDB
     Debug(DebugOpt),
     /// Launch project in Godot
@@ -26,6 +28,15 @@ pub struct BuildOpt {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
+}
+
+#[derive(Debug, clap::Parser)]
+pub struct CreateOpt {
+    #[arg(long, default_value = "Node")]
+    pub class: String,
+    #[arg(long, default_value = "./src/")]
+    pub dir: std::path::PathBuf,
+    pub name: String,
 }
 
 #[derive(Debug, clap::Parser)]

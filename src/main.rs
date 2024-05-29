@@ -28,6 +28,7 @@ fn main() -> Result {
 
     match command {
         opt::Command::Build(args) => build(args),
+        opt::Command::Create(args) => create(args),
         opt::Command::Debug(args) => debug(args),
         opt::Command::Editor(args) => editor(args),
         opt::Command::Export(args) => export(args),
@@ -71,6 +72,44 @@ macos.release.arm64 =    "res://{target}/release/lib{pkgname}.dylib"
     let mut gdextension = opt.manifest_path.parent().unwrap().join(pkgname);
     gdextension.set_extension("gdextension");
     std::fs::write(&gdextension, contents)?;
+    Ok(())
+}
+
+fn create(opt: opt::CreateOpt) -> Result {
+    use convert_case::Casing;
+
+    let contents = format!(
+        r#"use godot::engine::I{class};
+use godot::obj::WithBaseField as _;
+
+#[derive(Debug, godot::register::GodotClass)]
+#[class(init, base={class})]
+struct {name} {{
+    base: godot::obj::Base<godot::engine::{class}>,
+}}
+
+#[godot::register::godot_api]
+impl I{class} for {name} {{
+    fn ready(&mut self) {{
+    }}
+
+    fn process(&mut self, _delta: f64) {{
+    }}
+}}
+"#,
+        class = opt.class,
+        name = opt.name
+    );
+
+    let filename = opt.name.to_case(convert_case::Case::Snake);
+    let mut file = opt.dir.join(filename);
+    file.set_extension("rs");
+
+    if file.exists() {
+        eprintln!("File already exists");
+    } else {
+        std::fs::write(&file, contents)?;
+    }
     Ok(())
 }
 
