@@ -25,18 +25,20 @@ enum Error {
     Which(String),
 }
 
-fn main() -> Result {
+fn main() -> anyhow::Result<()> {
     let Opt::Godot(command) = Opt::parse();
 
     match command {
-        opt::Command::Build(args) => build(args),
-        opt::Command::Create(args) => create(args),
-        opt::Command::Debug(args) => debug(args),
-        opt::Command::Editor(args) => editor(args),
-        opt::Command::Export(args) => export(args),
-        opt::Command::Run(args) => run(args),
-        opt::Command::Script(args) => script(args),
-    }
+        opt::Command::Build(args) => build(args)?,
+        opt::Command::Create(args) => create(args)?,
+        opt::Command::Debug(args) => debug(args)?,
+        opt::Command::Editor(args) => editor(args)?,
+        opt::Command::Export(args) => export(args)?,
+        opt::Command::Run(args) => run(args)?,
+        opt::Command::Script(args) => script(args)?,
+    };
+
+    Ok(())
 }
 
 fn build(opt: opt::BuildOpt) -> Result {
