@@ -17,8 +17,10 @@ enum Error {
     Io(#[from] std::io::Error),
     #[error("Unable to read cargo manifest: {0}")]
     Manifest(#[from] cargo_metadata::Error),
+    #[error("Missing package.metadata.godot configuration in Cargo.toml")]
+    MissingMetadata,
     #[error("Unable to read cargo metadata: {0}")]
-    Metadata(#[from] serde_json::Error),
+    InvalidMetadata(#[from] serde_json::Error),
     #[error("Unable to find executable: {0}")]
     Which(String),
 }

@@ -15,6 +15,10 @@ impl Config {
         let root = root(&metadata).unwrap();
         let package = metadata.packages.iter().find(|x| &x.id == root).unwrap();
 
+        if package.metadata["godot"].is_null() {
+            return Err(crate::Error::MissingMetadata);
+        }
+
         let mut configuration: Self = serde_json::from_value(package.metadata["godot"].clone())?;
         configuration.project = manifest_path
             .parent()
