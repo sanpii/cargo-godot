@@ -182,6 +182,11 @@ fn run(opt: opt::RunOpt) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
     let mut args = config.into_args();
 
+    if let Some(editor_pid) = opt.editor_pid {
+        args.push("--editor-pid".to_string());
+        args.push(editor_pid.to_string());
+    }
+
     if opt.debug_collisions {
         args.push("--debug-collisions".to_string());
     }
