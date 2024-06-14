@@ -181,6 +181,11 @@ fn run(opt: opt::RunOpt) -> Result {
 
     let config = Config::try_from(&opt.manifest_path)?;
     let mut args = config.into_args();
+
+    if opt.debug_collisions {
+        args.push("--debug-collisions".to_string());
+    }
+
     if let Some(scene) = opt.scene {
         args.push(scene);
     }
