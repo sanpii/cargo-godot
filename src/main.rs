@@ -35,6 +35,7 @@ fn main() -> Result {
         opt::Command::Editor(args) => editor(args),
         opt::Command::Export(args) => export(args),
         opt::Command::Run(args) => run(args),
+        opt::Command::Script(args) => script(args),
     }
 }
 
@@ -194,6 +195,17 @@ fn run(opt: opt::RunOpt) -> Result {
     if let Some(scene) = opt.scene {
         args.push(scene);
     }
+
+    exec("godot", args)?;
+
+    Ok(())
+}
+
+fn script(opt: opt::ScriptOpt) -> Result {
+    let config = Config::try_from(&opt.manifest_path)?;
+    let mut args = config.into_args();
+    args.push("--script".to_string());
+    args.push(opt.script.to_str().unwrap().to_string());
 
     exec("godot", args)?;
 

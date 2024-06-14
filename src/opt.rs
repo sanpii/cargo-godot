@@ -21,6 +21,8 @@ pub enum Command {
     /// Run game
     #[command(alias = "r")]
     Run(RunOpt),
+    /// Execute a GD script
+    Script(ScriptOpt),
 }
 
 #[derive(Debug, clap::Parser)]
@@ -78,4 +80,13 @@ pub struct RunOpt {
     pub scene: Option<String>,
     #[arg(long)]
     pub debug_collisions: bool,
+}
+
+#[derive(Debug, clap::Parser)]
+pub struct ScriptOpt {
+    /// Path to Cargo.toml
+    #[arg(long, default_value = "./Cargo.toml")]
+    pub manifest_path: std::path::PathBuf,
+    /// Path to the script
+    pub script: std::path::PathBuf,
 }
