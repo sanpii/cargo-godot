@@ -190,8 +190,11 @@ fn run(opt: opt::RunOpt) -> Result {
         args.push(editor_pid.to_string());
     }
 
-    if opt.debug_collisions {
+    if opt.debug.contains(&opt::DebugType::Collisions) {
         args.push("--debug-collisions".to_string());
+    }
+    if opt.debug.contains(&opt::DebugType::Navigation) {
+        args.push("--debug-navigation".to_string());
     }
 
     if let Some(scene) = opt.scene {

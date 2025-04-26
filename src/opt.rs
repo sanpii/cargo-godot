@@ -78,8 +78,14 @@ pub struct RunOpt {
     pub editor_pid: Option<i32>,
     /// Launch this specified scene instead of the default one
     pub scene: Option<String>,
-    #[arg(long)]
-    pub debug_collisions: bool,
+    #[arg(long, value_enum, num_args=0.., value_delimiter=',', default_missing_value="collisions,navigation")]
+    pub debug: Vec<DebugType>,
+}
+
+#[derive(Clone, Debug, PartialEq, clap::ValueEnum)]
+pub enum DebugType {
+    Collisions,
+    Navigation,
 }
 
 #[derive(Debug, clap::Parser)]
