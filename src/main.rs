@@ -126,9 +126,10 @@ fn debug(opt: opt::DebugOpt) -> Result {
 
     cargo_build(&opt.manifest_path, BuildMode::Debug)?;
 
-    let godot = which("godot")?;
-    let mut args = vec![godot.to_str().unwrap().to_string(), "--".to_string()];
-    args.append(&mut config.into_args());
+    let (godot, mut args) = config.into_args();
+    args.insert(0, which(&godot)?.to_str().unwrap().to_string());
+    args.insert(1, "--".to_string());
+
     exec("lldb", &args)?;
 
     Ok(())
@@ -138,7 +139,7 @@ fn editor(opt: opt::EditorOpt) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
 
     exec(
-        "godot",
+        &config.godot_executable,
         ["--editor", "--path", config.project.to_str().unwrap()],
     )
 }
@@ -164,7 +165,7 @@ fn export(opt: opt::ExportOpt) -> Result {
         std::fs::create_dir_all(path.parent().unwrap())?;
     }
 
-    let mut args = config.into_args();
+    let (godot, mut args) = config.into_args();
     if opt.release {
         args.push("--export-release".to_string());
     } else {
@@ -174,7 +175,7 @@ fn export(opt: opt::ExportOpt) -> Result {
     args.push(opt.preset);
     args.push(path.to_str().unwrap().to_string());
 
-    exec("godot", &args)?;
+    exec(&godot, &args)?;
 
     Ok(())
 }
@@ -250,7 +251,7 @@ fn run(opt: opt::RunOpt) -> Result {
     build(build_opt)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
-    let mut args = config.into_args();
+    let (godot, mut args) = config.into_args();
 
     if let Some(editor_pid) = opt.editor_pid {
         args.push("--editor-pid".to_string());
@@ -268,18 +269,18 @@ fn run(opt: opt::RunOpt) -> Result {
         args.push(scene);
     }
 
-    exec("godot", args)?;
+    exec(&godot, args)?;
 
     Ok(())
 }
 
 fn script(opt: opt::ScriptOpt) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
-    let mut args = config.into_args();
+    let (godot, mut args) = config.into_args();
     args.push("--script".to_string());
     args.push(opt.script.to_str().unwrap().to_string());
 
-    exec("godot", args)?;
+    exec(&godot, args)?;
 
     Ok(())
 }

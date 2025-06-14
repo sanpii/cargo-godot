@@ -4,6 +4,12 @@ pub struct Config {
     pub name: String,
     pub project: std::path::PathBuf,
     pub remote_debug: Option<String>,
+    #[serde(default = "default_godot_path")]
+    pub godot_executable: String,
+}
+
+fn default_godot_path() -> String {
+    "godot".to_string()
 }
 
 impl Config {
@@ -33,7 +39,7 @@ impl Config {
         Ok(configuration)
     }
 
-    pub fn into_args(self) -> Vec<String> {
+    pub fn into_args(self) -> (String, Vec<String>) {
         let mut args = vec![
             "--path".to_string(),
             self.project.to_str().unwrap().to_string(),
@@ -44,7 +50,7 @@ impl Config {
             args.push(remote_debug);
         }
 
-        args
+        (self.godot_executable, args)
     }
 }
 

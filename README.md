@@ -35,3 +35,8 @@ can create a link in your godot project:
 cd ../godot
 ln -s ../rust/project.gdextension
 ```
+
+## Configuration
+
+- `project`: required. The path to the directory contening your godot project;
+- `godot_executable`: optional. The godot executable used to launch your project.
