@@ -44,7 +44,7 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn build(opt: opt::BuildOpt) -> Result {
+fn build(opt: opt::Build) -> Result {
     cargo_build(&opt.manifest_path, BuildMode::Debug)?;
 
     let config = Config::try_from(&opt.manifest_path)?;
@@ -83,7 +83,7 @@ macos.release.arm64 =    "res://{target}/release/lib{pkgname}.dylib"
     Ok(())
 }
 
-fn create(opt: opt::CreateOpt) -> Result {
+fn create(opt: opt::Create) -> Result {
     use convert_case::Casing;
 
     let contents = format!(
@@ -121,7 +121,7 @@ impl I{class} for {name} {{
     Ok(())
 }
 
-fn debug(opt: opt::DebugOpt) -> Result {
+fn debug(opt: opt::Debug) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
 
     cargo_build(&opt.manifest_path, BuildMode::Debug)?;
@@ -135,7 +135,7 @@ fn debug(opt: opt::DebugOpt) -> Result {
     Ok(())
 }
 
-fn editor(opt: opt::EditorOpt) -> Result {
+fn editor(opt: opt::Editor) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
 
     exec(
@@ -144,7 +144,7 @@ fn editor(opt: opt::EditorOpt) -> Result {
     )
 }
 
-fn export(opt: opt::ExportOpt) -> Result {
+fn export(opt: opt::Export) -> Result {
     let build_mode = if opt.release {
         BuildMode::Release
     } else {
@@ -180,7 +180,7 @@ fn export(opt: opt::ExportOpt) -> Result {
     Ok(())
 }
 
-fn init(opt: opt::InitOpt) -> Result {
+fn init(opt: opt::Init) -> Result {
     let name = if let Some(name) = opt.name {
         name
     } else {
@@ -244,8 +244,8 @@ fn symlink<P: AsRef<std::path::Path>, Q: AsRef<std::path::Path>>(original: P, li
     Ok(())
 }
 
-fn run(opt: opt::RunOpt) -> Result {
-    let build_opt = opt::BuildOpt {
+fn run(opt: opt::Run) -> Result {
+    let build_opt = opt::Build {
         manifest_path: opt.manifest_path.clone(),
     };
     build(build_opt)?;
@@ -274,7 +274,7 @@ fn run(opt: opt::RunOpt) -> Result {
     Ok(())
 }
 
-fn script(opt: opt::ScriptOpt) -> Result {
+fn script(opt: opt::Script) -> Result {
     let config = Config::try_from(&opt.manifest_path)?;
     let (godot, mut args) = config.into_args();
     args.push("--script".to_string());

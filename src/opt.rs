@@ -9,33 +9,33 @@ pub enum Opt {
 pub enum Command {
     /// Build extension
     #[command(alias = "b")]
-    Build(BuildOpt),
+    Build(Build),
     /// Create a new class
-    Create(CreateOpt),
+    Create(Create),
     /// Launch game via LLDB
-    Debug(DebugOpt),
+    Debug(Debug),
     /// Launch project in Godot
-    Editor(EditorOpt),
+    Editor(Editor),
     /// Export game
-    Export(ExportOpt),
+    Export(Export),
     /// Create a new project in an existing directory
-    Init(InitOpt),
+    Init(Init),
     /// Run game
     #[command(alias = "r")]
-    Run(RunOpt),
+    Run(Run),
     /// Execute a GD script
-    Script(ScriptOpt),
+    Script(Script),
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct BuildOpt {
+pub struct Build {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct CreateOpt {
+pub struct Create {
     #[arg(long, default_value = "Node")]
     pub class: String,
     #[arg(long, default_value = "./src/")]
@@ -44,21 +44,21 @@ pub struct CreateOpt {
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct DebugOpt {
+pub struct Debug {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct EditorOpt {
+pub struct Editor {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct ExportOpt {
+pub struct Export {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
@@ -72,14 +72,14 @@ pub struct ExportOpt {
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct InitOpt {
+pub struct Init {
     /// Set the project name. Defaults to the directory name.
     #[arg(long)]
     pub name: Option<String>,
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct RunOpt {
+pub struct Run {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
@@ -98,7 +98,7 @@ pub enum DebugType {
 }
 
 #[derive(Debug, clap::Parser)]
-pub struct ScriptOpt {
+pub struct Script {
     /// Path to Cargo.toml
     #[arg(long, default_value = "./Cargo.toml")]
     pub manifest_path: std::path::PathBuf,
