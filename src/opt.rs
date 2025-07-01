@@ -18,6 +18,8 @@ pub enum Command {
     Editor(EditorOpt),
     /// Export game
     Export(ExportOpt),
+    /// Create a new project in an existing directory
+    Init(InitOpt),
     /// Run game
     #[command(alias = "r")]
     Run(RunOpt),
@@ -67,6 +69,13 @@ pub struct ExportOpt {
     pub preset: String,
     /// Output path. ./build/ by default
     pub path: Option<std::path::PathBuf>,
+}
+
+#[derive(Debug, clap::Parser)]
+pub struct InitOpt {
+    /// Set the project name. Defaults to the directory name.
+    #[arg(long)]
+    pub name: Option<String>,
 }
 
 #[derive(Debug, clap::Parser)]

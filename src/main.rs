@@ -3,6 +3,8 @@
 mod config;
 mod opt;
 
+use std::io::Write;
+
 use clap::Parser;
 use config::Config;
 use opt::Opt;
@@ -34,6 +36,7 @@ fn main() -> anyhow::Result<()> {
         opt::Command::Debug(args) => debug(args)?,
         opt::Command::Editor(args) => editor(args)?,
         opt::Command::Export(args) => export(args)?,
+        opt::Command::Init(args) => init(args)?,
         opt::Command::Run(args) => run(args)?,
         opt::Command::Script(args) => script(args)?,
     };
@@ -172,6 +175,70 @@ fn export(opt: opt::ExportOpt) -> Result {
     args.push(path.to_str().unwrap().to_string());
 
     exec("godot", &args)?;
+
+    Ok(())
+}
+
+fn init(opt: opt::InitOpt) -> Result {
+    let name = if let Some(name) = opt.name {
+        name
+    } else {
+        let cwd = std::env::current_dir()?;
+
+        cwd.file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned()
+    };
+
+    exec("cargo", ["new", "--lib", "--name", &name, "rust"])?;
+    exec(
+        "cargo",
+        ["add", "godot", "--manifest-path", "rust/Cargo.toml"],
+    )?;
+
+    let mut manifest = std::fs::OpenOptions::new()
+        .append(true)
+        .open("rust/Cargo.toml")?;
+
+    let contents = r#"
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.godot]
+project = "../godot"
+"#;
+
+    manifest.write_all(contents.as_bytes())?;
+
+    std::fs::write(
+        "rust/src/lib.rs",
+        r#"use godot::prelude::*;
+
+struct MyExtension;
+
+#[gdextension]
+unsafe impl ExtensionLibrary for MyExtension {}
+"#,
+    )?;
+
+    std::fs::create_dir("godot")?;
+    std::fs::File::create("godot/project.godot")?;
+
+    symlink(
+        format!("../rust/{name}.gdextension"),
+        format!("godot/{name}.gdextension"),
+    )?;
+
+    Ok(())
+}
+
+fn symlink<P: AsRef<std::path::Path>, Q: AsRef<std::path::Path>>(original: P, link: Q) -> Result {
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(original, link)?;
+
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_file(original, link)?;
 
     Ok(())
 }
