@@ -74,7 +74,12 @@ macos.release =          "res://{target}/release/lib{pkgname}.dylib"
 macos.debug.arm64 =      "res://{target}/debug/lib{pkgname}.dylib"
 macos.release.arm64 =    "res://{target}/release/lib{pkgname}.dylib"
 "#,
-        target = target.display()
+        // NOTE: Godot requires `res://` paths to use `/` even on windows
+        target = target
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("/"),
     );
 
     let mut gdextension = opt.manifest_path.parent().unwrap().join(pkgname);
